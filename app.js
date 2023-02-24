@@ -28,7 +28,6 @@ const limiter = rateLimit({
 });
 
 // Apply the rate limiting middleware to all requests
-app.use(limiter);
 
 // 1st party dependencies
 var configData = require("./config/connection");
@@ -39,6 +38,7 @@ async function getApp() {
   mongoose.connect(connectionInfo.DATABASE_URL);
 
   var app = express();
+  app.use(limiter);
 
   var port = normalizePort(process.env.PORT || "3000");
   app.set("port", port);
