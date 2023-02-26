@@ -1,23 +1,24 @@
-const express = require("express")
-const subscribe = require("../controllers/subscription")
-const {getAllUsers, allPublishers, getPublisher} = require("../controllers/user")
+const express = require("express");
+const { subscribe, validate } = require("../controllers/subscription");
+const {
+  getAllUsers,
+  allPublishers,
+  getPublisher,
+} = require("../controllers/user");
 
-const {authorize,access}= require("../middleware/auth")
+const { authorize, access } = require("../middleware/auth");
 
+const router = express.Router();
 
-const router = express.Router()
+router.get("/publishers", allPublishers);
 
-router.get("/publishers",allPublishers)
+router.get("/publishers/:id", getPublisher);
 
-router.get("/publishers/:id",getPublisher)
+router.post("/subscribe", authorize, subscribe);
+router.post("/subscribe/validate", authorize, validate);
 
+router.use(authorize, access("admin"));
 
-router.post("/subscribe",authorize,subscribe)
+router.get("/", getAllUsers);
 
-
-router.use(authorize,access("admin"))
-
-
-router.get("/",getAllUsers)
-
-module.exports = router
+module.exports = router;
