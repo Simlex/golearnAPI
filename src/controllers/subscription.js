@@ -54,6 +54,11 @@ const subscribe = asyncHandler(async (req, res, next) => {
       let url = response.meta.authorization.redirect;
       open(url);
     }
+
+    return res.status(200).json({
+      success: true,
+      data: response,
+    });
   } catch (error) {
     console.log(error.message);
     return next(new ErrorResponse("payment failed", 500));
