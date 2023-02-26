@@ -57,7 +57,13 @@ async function getApp() {
   app.use(helmet());
   // prevent xss attack
   app.use(xss());
-  app.use(cors());
+  app.use(
+    cors({
+      origin: ["http://localhost:3000", "https://go-learn.online"],
+      credentials: true,
+    })
+  );
+
   app.use(hpp());
   app.use(express.static(path.join(__dirname, "public")));
 
