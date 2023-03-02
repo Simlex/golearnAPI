@@ -6,9 +6,10 @@ const fs = require("fs");
 const cloudinary = require("../utils/cloudinary");
 
 const craeteCourse = asyncHandler(async (req, res, next) => {
-  const publisher = req.body.publisher || req.user.id;
+  const publisher = req.user.id;
 
-  const publisherName = `${req.user.firstName} ${req.user.lastName}`;
+  const publisherName =
+    req.body.publisherName || `${req.user.firstName} ${req.user.lastName}`;
 
   req.body.publisherName = publisherName;
 
@@ -58,13 +59,11 @@ const uploadCourseContent = asyncHandler(async (req, res, next) => {
     await course.save();
   }
 
-  res
-    .status(200)
-    .json({
-      success: true,
-      msg: "successfully uploaded course content",
-      data: course,
-    });
+  res.status(200).json({
+    success: true,
+    msg: "successfully uploaded course content",
+    data: course,
+  });
 });
 
 const uploadCourseImage = asyncHandler(async (req, res, next) => {
@@ -99,13 +98,11 @@ const uploadCourseImage = asyncHandler(async (req, res, next) => {
 
   await course.save();
 
-  res
-    .status(200)
-    .json({
-      success: true,
-      msg: "successfully uploaded course image",
-      data: course,
-    });
+  res.status(200).json({
+    success: true,
+    msg: "successfully uploaded course image",
+    data: course,
+  });
 });
 
 const updateCourse = asyncHandler(async (req, res, next) => {
