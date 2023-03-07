@@ -48,6 +48,9 @@ const userSchema = mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    subscriptionExpires: {
+      type: Date,
+    },
     resetToken: String,
     resetTokenExpire: Date,
   },

@@ -1,110 +1,80 @@
 const ErrorResponse = require("../utils/errorResponse");
 const asyncHandler = require("../middleware/asyncHandler");
-
-const Flutterwave = require("flutterwave-node-v3");
+const axios = require("axios");
 const sendMail = require("../utils/sendMail");
 const User = require("../models/UserModel");
 
 const subscribe = asyncHandler(async (req, res, next) => {
-  const id = req.user.id;
+  const userId = req.user.id;
   const isSubscribed = req.user.isSubscribed;
 
-  const ref = Math.floor(Math.random() * 1000000 + 1);
+  if (isSubscribed)
+    return next(new ErrorResponse("You have already subscribed", 400));
 
-  const mref = `rf${ref}`;
+  // Check if the user's subscription is still active
+  // In this example, we assume users subscribe for 1 year
+  const currentYear = new Date().getFullYear();
+  const expiryYear = new Date(req.user.subscriptionExpires).getFullYear();
 
-  const flw = new Flutterwave(
-    process.env.FLW_PUBLIC_KEY,
-    process.env.FLW_SECRET_KEY
-  );
+  if (expiryYear >= currentYear) {
+    return next(
+      new ErrorResponse(
+        "You already have an active subscription that expires on " +
+          req.user.subscriptionExpires.toDateString(),
+        400
+      )
+    );
+  }
 
-  if (isSubscribed == true)
-    return next(new ErrorResponse("you have already subscribed", 400));
-
-  let payload = {
-    card_number: req.body.card_number,
-    cvv: req.body.cvv,
-    expiry_month: req.body.expiry_month,
-    expiry_year: req.body.expiry_year,
-    currency: "NGN",
-    amount: 1000,
-    redirect_url: "https://www.google.com",
-    fullname: `${req.user.firstName} ${req.user.lastName}`,
-    email: req.user.email,
-    phone_number: req.body.phoneNumber,
-    enckey: process.env.FLW_ENCRYPTION_KEY,
-    tx_ref: mref,
-  };
+  // Get the Paystack reference number from the frontend
+  const reference = req.body.reference;
 
   try {
-    const response = await flw.Charge.card(payload);
-    //    console.log(response)
-    if (response.meta.authorization.mode === "pin") {
-      let payload2 = payload;
-      payload2.authorization = {
-        mode: "pin",
-        fields: ["pin"],
-        pin: req.body.pin,
-      };
-      const reCallCharge = await flw.Charge.card(payload2);
+    // Verify the Paystack transaction using the reference number
+    const paystackResponse = await axios.get(
+      `https://api.paystack.co/transaction/verify/${reference}`,
+      {
+        headers: {
+          Authorization: `Bearer ${process.env.PAYSTACK_SECRET_KEY}`,
+        },
+      }
+    );
 
-      req.session.flw_ref = reCallCharge.data.flw_ref;
-    }
-    if (response.meta.authorization.mode === "redirect") {
-      let url = response.meta.authorization.redirect;
-      open(url);
+    const { status } = paystackResponse.data;
+
+    if (status !== "success") {
+      return next(new ErrorResponse("Payment failed", 500));
     }
 
-    return res.status(200).json({
-      success: true,
-      data: response,
-    });
-  } catch (error) {
-    console.log(error.message);
-    return next(new ErrorResponse("payment failed", 500));
-  }
-});
-
-const validate = asyncHandler(async (req, res, next) => {
-  const id = req.user.id;
-  const flw = new Flutterwave(
-    process.env.FLW_PUBLIC_KEY,
-    process.env.FLW_SECRET_KEY
-  );
-
-  const callValidate = await flw.Charge.validate({
-    otp: req.body.otp,
-    flw_ref: req.session.flw_ref,
-  });
-  // console.log(callValidate)
-  if (callValidate.status === "success") {
-    // change subscription status
-    const user = await User.findById(id);
+    // Update the user's subscription status
+    const user = await User.findById(userId);
     user.isSubscribed = true;
+    user.subscriptionExpires = new Date(Date.now() + 31536000000); // Set the subscription to expire in 1 year
 
     await user.save();
 
+    // Send a subscription confirmation email to the user
     try {
       await sendMail({
         email: user.email,
-        subject: "click on this link to join exclusive telegram group",
-        message: "link",
+        subject: "Click on this link to join exclusive telegram group",
+        message: "Link",
       });
     } catch (error) {
       console.log(error.message);
 
-      next(new ErrorResponse("message could not be sent", 500));
+      return next(new ErrorResponse("Message could not be sent", 500));
     }
-
-    return res.status(201).json({
-      success: true,
-      msg: "payment successful",
-      flw_ref: req.session.flw_ref,
-      link: "link",
-    });
-  } else {
-    return next(new ErrorResponse("payment failed", 500));
+  } catch (err) {
+    console.log(err.message);
+    return next(new ErrorResponse("Payment failed", 500));
   }
+
+  return res.status(201).json({
+    success: true,
+    msg: "Payment successful",
+    link: "Link",
+  });
 });
 
-module.exports = { subscribe, validate };
+module.exports = { subscribe };

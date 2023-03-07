@@ -1,5 +1,5 @@
 const express = require("express");
-const { subscribe, validate } = require("../controllers/subscription");
+const { subscribe } = require("../controllers/subscription");
 const {
   getAllUsers,
   allPublishers,
@@ -15,7 +15,6 @@ router.get("/publishers", allPublishers);
 router.get("/publishers/:id", getPublisher);
 
 router.post("/subscribe", authorize, subscribe);
-router.post("/subscribe/validate", authorize, validate);
 
 router.use(authorize, access("admin"));
 
