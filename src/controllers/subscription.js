@@ -28,6 +28,7 @@ const subscribe = asyncHandler(async (req, res, next) => {
 
   // Get the Paystack reference number from the frontend
   const reference = req.body.reference;
+  const user = await User.findById(userId);
 
   try {
     // Verify the Paystack transaction using the reference number
@@ -53,7 +54,6 @@ const subscribe = asyncHandler(async (req, res, next) => {
     }
 
     // Update the user's subscription status
-    const user = await User.findById(userId);
     user.isSubscribed = true;
     user.subscriptionExpires = new Date(Date.now() + 31536000000); // Set the subscription to expire in 1 year
 
@@ -77,6 +77,7 @@ const subscribe = asyncHandler(async (req, res, next) => {
   }
 
   return res.status(201).json({
+    user: user,
     success: true,
     msg: "Payment successful",
     link: "Link",
