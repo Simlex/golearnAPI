@@ -1,7 +1,7 @@
 const ErrorResponse = require("../utils/errorResponse");
 const asyncHandler = require("../middleware/asyncHandler");
 const axios = require("axios");
-const sendMail = require("../utils/sendMail");
+const { sendMail } = require("../utils/sendMail");
 const User = require("../models/UserModel");
 
 const subscribe = asyncHandler(async (req, res, next) => {
@@ -40,7 +40,13 @@ const subscribe = asyncHandler(async (req, res, next) => {
       }
     );
 
-    const { status } = paystackResponse.data;
+    console.log(paystackResponse);
+
+    console.log(paystackResponse.data);
+
+    const { status } = paystackResponse.data.data;
+
+    console.log(status);
 
     if (status !== "success") {
       return next(new ErrorResponse("Payment failed", 500));
@@ -55,11 +61,11 @@ const subscribe = asyncHandler(async (req, res, next) => {
 
     // Send a subscription confirmation email to the user
     try {
-      await sendMail({
-        email: user.email,
-        subject: "Click on this link to join exclusive telegram group",
-        message: "Link",
-      });
+      sendMail(
+        user.email,
+        "Click on this link to join exclusive telegram group",
+        "Link"
+      );
     } catch (error) {
       console.log(error.message);
 
