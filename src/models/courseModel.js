@@ -15,6 +15,12 @@ const courseSchema = mongoose.Schema({
         type:String,
         required:true
     },
+    courseType: {
+      type: Number,
+      required: true,
+      enum: [0, 1],
+      default: 0,
+    },
     courseDescription:{
         type:String,
         required:true
