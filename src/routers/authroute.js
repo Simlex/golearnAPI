@@ -1,21 +1,33 @@
-const express = require("express")
-const { register,login, getMe, generateToken, resetPassword, uploadDisplayPicture, } = require("../controllers/auth")
-const {authorize,access}= require("../middleware/auth")
-const uploadPicture = require("../utils/pictureUpload")
+const express = require("express");
+const {
+  register,
+  login,
+  logout,
+  getMe,
+  generateToken,
+  resetPassword,
+  uploadDisplayPicture,
+} = require("../controllers/auth");
+const { authorize, access } = require("../middleware/auth");
+const uploadPicture = require("../utils/pictureUpload");
 
-const router = express.Router()
+const router = express.Router();
 
-router.post("/login",login)
+router.post("/login", login);
 
-router.route("/")
-.post(register)
-.get(authorize,getMe)
+router.post("/logout", authorize, logout);
 
-router.post("/generatetoken",generateToken)
+router.route("/").post(register).get(authorize, getMe);
 
-router.put("/resetpassword/:resetToken",resetPassword)
+router.post("/generatetoken", generateToken);
 
-router.post("/uploaddisplaypicture",authorize,uploadPicture.single("displaypicture"),uploadDisplayPicture)
+router.put("/resetpassword/:resetToken", resetPassword);
 
+router.post(
+  "/uploaddisplaypicture",
+  authorize,
+  uploadPicture.single("displaypicture"),
+  uploadDisplayPicture
+);
 
-module.exports = router
+module.exports = router;

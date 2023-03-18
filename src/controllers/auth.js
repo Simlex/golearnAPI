@@ -48,7 +48,7 @@ const register = asyncHandler(async (req, res, next) => {
 });
 
 const login = asyncHandler(async (req, res, next) => {
-  const { email, password, userName } = req.body;
+  const { email, password, userName, keepLoggedIn } = req.body;
 
   // check for empty fields
   if (!email && !userName)
@@ -68,11 +68,12 @@ const login = asyncHandler(async (req, res, next) => {
   if (!validPassword)
     return next(new ErrorResponse("invalid credentials", 400));
 
-  sendCookie(user, 200, res);
+  const expirationTime = keepLoggedIn ? "30d" : "2h";
+  sendCookie(user, 200, res, expirationTime);
 });
 
 // cookie function
-const sendCookie = (user, statusCode, res) => {
+const sendCookie = (user, statusCode, res, expirationTime) => {
   const token = jwt.sign(
     {
       id: user._id,
@@ -84,10 +85,10 @@ const sendCookie = (user, statusCode, res) => {
       isSubscribed: user.isSubscribed,
     },
     process.env.JWT_SECRET,
-    { expiresIn: "30d" }
+    { expiresIn: expirationTime }
   );
   const options = {
-    expires: new Date(Date.now() + 2592000000),
+    expires: new Date(Date.now() + (keepLoggedIn ? 2592000000 : 7200000)),
     httpOnly: true,
   };
   res
@@ -95,6 +96,11 @@ const sendCookie = (user, statusCode, res) => {
     .cookie("token", token, options)
     .json({ success: true, token });
 };
+
+const logout = asyncHandler(async (req, res, next) => {
+  res.clearCookie("token");
+  res.status(200).json({ success: true });
+});
 
 const getMe = asyncHandler(async (req, res, next) => {
   const id = req.user.id;
@@ -242,6 +248,7 @@ const uploadDisplayPicture = asyncHandler(async (req, res, next) => {
 module.exports = {
   register,
   login,
+  logout,
   getMe,
   changePassword,
   generateToken,
