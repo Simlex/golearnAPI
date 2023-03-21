@@ -1,19 +1,19 @@
-const mongoose = require("mongoose")
+const mongoose = require("mongoose");
 
-
-const courseSchema = mongoose.Schema({
-    publisher:{
-        type:mongoose.Schema.ObjectId,
-        ref:"User",
-        required:true
+const courseSchema = mongoose.Schema(
+  {
+    publisher: {
+      type: mongoose.Schema.ObjectId,
+      ref: "User",
+      required: true,
     },
-    publisherName:{
-        type:String,
-        required:true
+    publisherName: {
+      type: String,
+      required: true,
     },
-    courseTitle:{
-        type:String,
-        required:true
+    courseTitle: {
+      type: String,
+      required: true,
     },
     courseType: {
       type: Number,
@@ -21,63 +21,71 @@ const courseSchema = mongoose.Schema({
       enum: [0, 1],
       default: 0,
     },
-    courseDescription:{
-        type:String,
-        required:true
+    numberOfStudents: {
+      type: Number,
+      default: 0,
     },
-    courseDuration:{
-        type:String,
-        required:true
+    courseDescription: {
+      type: String,
+      required: true,
     },
-    averageRating:{
-        type:Number
+    courseDuration: {
+      type: String,
+      required: true,
     },
-    category:{
-        type:String,
-        required:true,
+    averageRating: {
+      type: Number,
     },
-    courseContent:[{
-        title:{
-            type:String
+    category: {
+      type: String,
+      required: true,
+    },
+    courseContent: [
+      {
+        title: {
+          type: String,
         },
-        content:{
-            type:String
+        content: {
+          type: String,
         },
-        youtube:{
-            type:String
-        }
-    }],
-    whatToLearn:{
-        type:Array,
-        required:true
+        youtube: {
+          type: String,
+        },
+      },
+    ],
+    whatToLearn: {
+      type: Array,
+      required: true,
     },
-    requirement:{
-        type:[String],
-        required:true
+    requirement: {
+      type: [String],
+      required: true,
     },
-    audience:{
-        type:[String],
-        required:true
+    audience: {
+      type: [String],
+      required: true,
     },
-    materials:{
-        type:[String],
-        required:true
+    materials: {
+      type: [String],
+      required: true,
     },
-    price:{
-        type:Number,
-        required:true,
-        default:0
+    price: {
+      type: Number,
+      required: true,
+      default: 0,
     },
-    link:String,
-    tags:{
-        type:[String],
-        required:true
+    link: String,
+    tags: {
+      type: [String],
+      required: true,
     },
-    courseImage:{
-        type:String
+    courseImage: {
+      type: String,
     },
-},{timestamps:true})
+  },
+  { timestamps: true }
+);
 
-const Course = mongoose.model("Course",courseSchema)
+const Course = mongoose.model("Course", courseSchema);
 
-module.exports = Course
+module.exports = Course;

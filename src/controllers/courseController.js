@@ -123,6 +123,36 @@ const updateCourse = asyncHandler(async (req, res, next) => {
   res.status(200).json({ success: true, data: course });
 });
 
+const enrollCourse = asyncHandler(async (req, res, next) => {
+  const courseId = await Course.findById(req.params.id);
+  const user = await User.findById(req.user.id);
+
+  if (!courseId)
+    return next(
+      new ErrorResponse(`No course with the id of ${req.params.id}`, 404)
+    );
+
+  try {
+    if (user.enrolledCourses.includes(course._id))
+      return next(
+        new ErrorResponse("you have already enrolled for this course")
+      );
+
+    user.enrolledCourses.push(course._id);
+
+    await user.save();
+
+    const course = await Course.findByIdAndUpdate(
+      courseId,
+      { $inc: { numberOfStudents: 1 } },
+      { new: true }
+    );
+    res.status(200).json({ success: true, data: course, user });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
 const deleteCourse = asyncHandler(async (req, res, next) => {
   let course = await Course.findById(req.params.id);
 
@@ -141,13 +171,14 @@ const deleteCourse = asyncHandler(async (req, res, next) => {
 
 const getCourse = asyncHandler(async (req, res, next) => {
   const course = await Course.findById(req.params.id);
+  const publisher = await User.findById(course.publisher);
 
   if (!course)
     return next(
       new ErrorResponse(`No course with the id of ${req.params.id}`, 404)
     );
 
-  res.status(200).json({ success: true, data: course });
+  res.status(200).json({ success: true, data: course, publisher });
 });
 
 const deleteCourseContent = asyncHandler(async (req, res, next) => {
@@ -318,4 +349,5 @@ module.exports = {
   getAllcourses,
   allCourseByAPublisher,
   uploadCourseImage,
+  enrollCourse,
 };

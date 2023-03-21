@@ -38,6 +38,12 @@ const userSchema = mongoose.Schema(
       enum: ["user", "publisher", "admin"],
       default: "user",
     },
+    enrolledCourses: [
+      {
+        type: mongoose.Schema.ObjectId,
+        ref: "Course",
+      },
+    ],
     phoneNumber: {
       type: String,
     },
