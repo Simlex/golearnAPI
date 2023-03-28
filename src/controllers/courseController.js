@@ -128,17 +128,15 @@ const enrollCourse = asyncHandler(async (req, res, next) => {
   const user = await User.findById(req.user.id);
 
   if (!courseId)
-    return next(
-      new ErrorResponse(`No course with the id of ${req.params.id}`, 404)
-    );
+    return next(new ErrorResponse(`No course with the id of ${courseId}`, 404));
 
   try {
-    if (user.enrolledCourses.includes(course._id))
+    if (user.enrolledCourses.includes(courseId))
       return next(
         new ErrorResponse("you have already enrolled for this course")
       );
 
-    user.enrolledCourses.push(course._id);
+    user.enrolledCourses.push(courseId);
 
     await user.save();
 
