@@ -69,11 +69,11 @@ const login = asyncHandler(async (req, res, next) => {
     return next(new ErrorResponse("invalid credentials", 400));
 
   const expirationTime = keepLoggedIn ? "30d" : "2h";
-  sendCookie(user, 200, res, expirationTime);
+  sendCookie(user, 200, res, expirationTime, keepLoggedIn);
 });
 
 // cookie function
-const sendCookie = (user, statusCode, res, expirationTime) => {
+const sendCookie = (user, statusCode, res, expirationTime, keepLoggedIn) => {
   const token = jwt.sign(
     {
       id: user._id,
