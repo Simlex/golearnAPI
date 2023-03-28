@@ -73,7 +73,17 @@ const login = asyncHandler(async (req, res, next) => {
 });
 
 // cookie function
-const sendCookie = (user, statusCode, res, expirationTime, keepLoggedIn) => {
+const sendCookie = (
+  user,
+  statusCode,
+  res,
+  expirationTime = "2h",
+  keepLoggedIn = false
+) => {
+  const expiresIn =
+    typeof expirationTime === "string"
+      ? expirationTime
+      : expirationTime.toString() + "s";
   const token = jwt.sign(
     {
       id: user._id,
