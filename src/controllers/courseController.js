@@ -131,7 +131,7 @@ const enrollCourse = asyncHandler(async (req, res, next) => {
     return next(new ErrorResponse(`No course with the id of ${courseId}`, 404));
 
   try {
-    if (user.enrolledCourses.includes(courseId))
+    if (user.enrolledCourses.includes(courseId.toString()))
       return next(
         new ErrorResponse("you have already enrolled for this course")
       );
