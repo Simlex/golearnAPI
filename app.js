@@ -59,7 +59,11 @@ async function getApp() {
   app.use(xss());
   app.use(
     cors({
-      origin: ["http://localhost:3000", "https://go-learn.online"],
+      origin: [
+        "http://localhost:3000",
+        "https://go-learn.online",
+        "https://go-learn.netlify.app",
+      ],
       credentials: true,
     })
   );
