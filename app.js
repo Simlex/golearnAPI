@@ -13,6 +13,9 @@ const authRouter = require("./src/routers/authroute");
 const reviewRouter = require("./src/routers/reviewRoute");
 const cartRouter = require("./src/routers/cartRoute");
 const oredrRouter = require("./src/routers/orderRouter");
+const CourseStats = require("./src/models/courseStats");
+const Course = require("./src/models/courseModel");
+const User = require("./src/models/UserModel");
 const userRouter = require("./src/routers/userRoute");
 const mongoSanitize = require("express-mongo-sanitize");
 const helmet = require("helmet");
@@ -20,6 +23,18 @@ const xss = require("xss-clean");
 const rateLimit = require("express-rate-limit");
 const hpp = require("hpp");
 const cors = require("cors");
+
+const initializeCourseStats = async () => {
+  const courses = await Course.find();
+  for (const course of courses) {
+    const users = await User.find({ enrolledCourses: course._id });
+    const totalStudents = users.length;
+    await CourseStats.create({ courseId: course._id, totalStudents });
+  }
+};
+
+// Call the initializeCourseStats function to initialize the CourseStats collection
+initializeCourseStats();
 
 // set rate limit
 const limiter = rateLimit({

@@ -145,7 +145,17 @@ const enrollCourse = asyncHandler(async (req, res, next) => {
       { $inc: { numberOfStudents: 1 } },
       { new: true }
     );
-    res.status(200).json({ success: true, data: course, user });
+
+    await CourseStats.findOneAndUpdate(
+      { courseId: course._id },
+      { $inc: { totalStudents: 1 } }
+    );
+
+    const totalStudents = await CourseStats.aggregate([
+      { $group: { _id: null, total: { $sum: "$totalStudents" } } },
+    ]);
+
+    res.status(200).json({ success: true, data: course, user, totalStudents });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
