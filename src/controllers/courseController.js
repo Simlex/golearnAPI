@@ -123,6 +123,14 @@ const updateCourse = asyncHandler(async (req, res, next) => {
   res.status(200).json({ success: true, data: course });
 });
 
+const getTotalNumberOfStudents = asyncHandler(async (req, res, next) => {
+  const totalStudents = await CourseStats.aggregate([
+    { $group: { _id: null, total: { $sum: "$totalStudents" } } },
+  ]);
+
+  res.status(200).json({ success: true, data: totalStudents });
+});
+
 const enrollCourse = asyncHandler(async (req, res, next) => {
   const courseId = await Course.findById(req.params.id);
   const user = await User.findById(req.user.id);
@@ -358,4 +366,5 @@ module.exports = {
   allCourseByAPublisher,
   uploadCourseImage,
   enrollCourse,
+  getTotalNumberOfStudents,
 };

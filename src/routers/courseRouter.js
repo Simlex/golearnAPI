@@ -10,6 +10,7 @@ const {
   allCourseByAPublisher,
   uploadCourseImage,
   enrollCourse,
+  getTotalNumberOfStudents,
 } = require("../controllers/courseController");
 const express = require("express");
 const { authorize, access } = require("../middleware/auth");
@@ -57,6 +58,13 @@ router.post(
   access("publisher", "admin"),
   uploadPicture.single("courseimage"),
   uploadCourseImage
+);
+
+router.get(
+  "/totalstudents",
+  authorize,
+  access("publisher", "admin"),
+  getTotalNumberOfStudents
 );
 
 router.patch("/:id/enroll", authorize, access("user"), enrollCourse);
