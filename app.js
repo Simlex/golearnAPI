@@ -25,11 +25,22 @@ const hpp = require("hpp");
 const cors = require("cors");
 
 const initializeCourseStats = async () => {
-  const courses = await Course.find();
-  for (const course of courses) {
-    const users = await User.find({ enrolledCourses: course._id });
-    const totalStudents = users.length;
-    await CourseStats.create({ courseId: course._id, totalStudents });
+  try {
+    const courseStats = await Course.aggregate([
+      {
+        $group: {
+          _id: null,
+          totalStudents: { $sum: "$numberOfStudents" },
+        },
+      },
+    ]);
+
+    if (courseStats.length > 0) {
+      const totalStudents = courseStats[0].totalStudents;
+      await CourseStats.create({ totalStudents });
+    }
+  } catch (err) {
+    console.error(err);
   }
 };
 
