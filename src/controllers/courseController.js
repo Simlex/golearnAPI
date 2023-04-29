@@ -4,6 +4,27 @@ const asyncHandler = require("../middleware/asyncHandler");
 const User = require("../models/UserModel");
 const fs = require("fs");
 const cloudinary = require("../utils/cloudinary");
+const CourseStats = require("../models/courseStats");
+
+const initializeCourseStats = async () => {
+  try {
+    const courseStats = await Course.aggregate([
+      {
+        $group: {
+          _id: null,
+          totalStudents: { $sum: "$numberOfStudents" },
+        },
+      },
+    ]);
+
+    if (courseStats.length > 0) {
+      const totalStudents = courseStats[0].totalStudents;
+      await CourseStats.create({ totalStudents });
+    }
+  } catch (err) {
+    console.error(err);
+  }
+};
 
 const craeteCourse = asyncHandler(async (req, res, next) => {
   const publisher = req.user.id;
@@ -123,6 +144,24 @@ const updateCourse = asyncHandler(async (req, res, next) => {
   res.status(200).json({ success: true, data: course });
 });
 
+const getTotalNumberOfStudents = asyncHandler(async (req, res, next) => {
+  try {
+    const courseStats = await CourseStats.aggregate([
+      {
+        $group: {
+          _id: null,
+          totalStudents: { $sum: "$totalStudents" },
+        },
+      },
+    ]);
+
+    const totalStudents = courseStats[0].totalStudents;
+
+    res.status(200).json({ success: true, data: totalStudents });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
 const enrollCourse = asyncHandler(async (req, res, next) => {
   const courseId = await Course.findById(req.params.id);
   const user = await User.findById(req.user.id);
@@ -145,6 +184,14 @@ const enrollCourse = asyncHandler(async (req, res, next) => {
       { $inc: { numberOfStudents: 1 } },
       { new: true }
     );
+
+    await CourseStats.findOneAndUpdate(
+      { courseId: course._id },
+      { $inc: { totalStudents: 1 } }
+    );
+
+    initializeCourseStats();
+
     res.status(200).json({ success: true, data: course, user });
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -348,4 +395,5 @@ module.exports = {
   allCourseByAPublisher,
   uploadCourseImage,
   enrollCourse,
+  getTotalNumberOfStudents,
 };
